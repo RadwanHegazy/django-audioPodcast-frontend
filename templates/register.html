@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>انشاء حساب</title>
+    <link rel="stylesheet" href="style/form.css">
+</head>
+<body>
+
+    <img src="images/bg.png" alt="" class="bg">
+    
+    <div class="container">
+        <h1>انشاء حساب</h1>
+        
+        <div class="img-cont">
+            <p>ارفع صورة</p>
+            <img  src="" hidden>
+            <input type="file" accept="image/*" hidden>
+        </div>
+
+        <input type="text" placeholder="الاسم بالكامل">
+        <input type="email" placeholder="البريد الالكتروني">
+        <input type="password" placeholder="كلمة المرور">
+
+        <div class="btns">
+            <a href="#">تسجيل الدخول</a>
+            <button>انشاء حساب</button>
+        </div>
+    </div>
+
+
+    <script>
+
+        var imgBtn = document.querySelector('.img-cont');
+        var imgFile = imgBtn.querySelector('input');
+        var imgView = imgBtn.querySelector('img');
+        var p = imgBtn.querySelector('p');
+
+        imgBtn.addEventListener('click',()=>{
+            imgFile.click()
+        })
+
+        imgFile.addEventListener('change', (e)=>{
+            p.hidden = true;
+            imgView.src = URL.createObjectURL(e.target.files[0]);
+            imgView.hidden = false;
+        })
+
+    </script>
+</body>
+</html>
