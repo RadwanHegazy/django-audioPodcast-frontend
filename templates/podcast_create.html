@@ -1,26 +1,28 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>انشاء جلسة</title>
-    <link rel="stylesheet" href="style/form.css">
+    <link rel="stylesheet" href="{% static 'style/form.css' %}">
 </head>
 <body>
 
-    <img src="images/bg.png" alt="" class="bg">
+    <img src="{% static 'images/bg.png' %}" alt="" class="bg">
     
-    <div class="container">
+    <form class="container" method="POST">
+        {% csrf_token %}
         <h1>انشاء جلسة</h1>
 
-        <input type="text" placeholder="اسم الجلسة">
+        <input type="text" placeholder="اسم الجلسة" name="title">
 
         <div class="btns">
-            <a href="#">الرجوع</a>
-            <button>انشاء جلسة</button>
+            <a href="{% url 'home' %}">الرجوع</a>
+            <button type="submit">انشاء جلسة</button>
         </div>
 
-    </div>
+    </form>
 
 
 </body>

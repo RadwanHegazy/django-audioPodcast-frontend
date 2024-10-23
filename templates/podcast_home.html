@@ -1,26 +1,27 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>عنوان الجلسة</title>
-    <link rel="stylesheet" href="style/podcast_home.css">
+    <title>{{title}}</title>
+    <link rel="stylesheet" href="{% static 'style/podcast_home.css' %}">
 </head>
 <body>
 
-    <img src="images/bg.png" alt="" class="bg">
+    <img src="{% static 'images/bg.png' %}" alt="" class="bg">
     
     <div class="container">
-        <h1>عنوان الجلسة</h1>
+        <h1>{{title}}</h1>
 
         <div class="user">
-            <img src="images/bg.png" width="50px" height="50px" alt="">
-            <p>اسم المتكلم هنا</p>
+            <img src="{{main_url}}{{owner.picture}}" width="50px" height="50px" alt="">
+            <p>{{owner.full_name}}</p>
         </div>
 
         <div class="counters">
             <p>عدد المستمعين : </p>
-            <p id="counter">20</p>
+            <p id="counter">{{visitors_counter}}</p>
         </div>
 
         <div class="btns">
