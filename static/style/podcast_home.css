@@ -91,7 +91,7 @@ img.bg {
     display: flex;
     justify-content: flex-end;
 }
-.container .btns button {
+.container .btns button , .audio_option{
     padding: 6px 12px;
     height: 55px;
     border: none;
@@ -101,4 +101,10 @@ img.bg {
     color: #fff;
     background-color: crimson;
     cursor: pointer;
+}
+
+
+.audio_option {
+    background-color: aquamarine;
+    color: #000;
 }
