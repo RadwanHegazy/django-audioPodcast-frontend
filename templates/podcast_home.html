@@ -24,11 +24,199 @@
             <p id="counter">{{visitors_counter}}</p>
         </div>
 
+        {% if c_user %}
+            <button class="audio_option" id="start-live">Start Streaming</button>
+        {% else %}
+            <button class="audio_option" id="join-stream">Join Stream</button>
+        {% endif %}
+
+        <audio id="live-audio" controls autoplay hidden></audio>
+    
         <div class="btns">
-            <button>انهاء \ خروج</button>
+            <button id="exit">خروج</button>
         </div>
 
     </div>
+    
+    <script src="https://unpkg.com/peerjs@1.3.2/dist/peerjs.min.js"></script>
+
+    {% if c_user %}
+        <script>
+            const localAudio = document.getElementById('live-audio')
+            localAudio.muted = true;
+
+            let stream;
+            const peers = []
+            const peer = new Peer(makeid(10))
+            ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
+            var user_token = document.cookie.split("=")[2];
+            const meetingSocket = new WebSocket(`${ws_scheme}://127.0.0.1:4444/ws/stage/{{id}}/`)
+            
+            const setVideoStream = (video, _stream) => {
+                video.srcObject = _stream
+                video.onloadedmetadata = _ => {
+                    video.play();
+                }
+            }
+
+            const startMeeting = _ => {
+                if (meetingSocket.readyState === 1) {
+                    meetingSocket.send(JSON.stringify({ function: 'newUser', "parameter": peer.id, id: window.userID }))
+                    } else {
+                        meetingSocket.onopen = e => meetingSocket.send(JSON.stringify({ function: 'newUser', "parameter": peer.id, id: window.userID }))
+                    }
+
+                
+            }
+
+            const newUser = e => {
+                call = peer.call(e.parameter, stream)
+                peers.push(call)
+                call.on('stream', remoteStream => {
+
+                    setVideoStream(localAudio, remoteStream)
+                })
+            }
+
+            meetingSocket.onmessage = e => {
+                const data = JSON.parse(e.data)
+                console.log("incomming data : ",data)
+
+                if (data.function === "newUser" && data.parameter != peer.id) {
+                    newUser(data)
+                }
+
+                if (data.visitors) {
+                    document.getElementById('counter').textContent = data.visitors;
+                }
+                
+                
+            }
+
+            peer.on('call', call => {
+                let renderedVideo = newVideoRenderer(call.peer)
+                peers.push(call)
+                call.answer(stream)
+                call.on('stream', remoteStream => {
+                    setVideoStream(document.getElementById(`user-${call.peer}`), remoteStream)
+                })
+            })
+
+            function makeid(length) {
+                var result = '';
+                var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+                var charactersLength = characters.length;
+                for (var i = 0; i < length; i++) {
+                    result += characters.charAt(Math.floor(Math.random() *
+                        charactersLength));
+                }
+                return result;
+            }
+
+            document.getElementById('start-live').addEventListener('click',function(){
+                this.hidden = true;
+                navigator.mediaDevices.getUserMedia({ video: false, audio: true }).then((localstream) => {
+                    stream = localstream
+                    setVideoStream(localAudio, stream)
+                    startMeeting()
+
+                })
+            })
+        </script>
+    {% else %}
+        <script>
+        const localAudio = document.getElementById('live-audio')
+        
+        let stream;
+        const peers = []
+        const peer = new Peer(makeid(10))
+        ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
+        
+        const meetingSocket = new WebSocket(`${ws_scheme}://127.0.0.1:4444/ws/stage/{{id}}/`)
+       
+        const setVideoStream = (video, _stream) => {
+            video.srcObject = _stream
+            video.onloadedmetadata = _ => {
+                video.play();
+            }
+        }
+    
+        const startMeeting = _ => {
+            if (meetingSocket.readyState === 1) {
+                meetingSocket.send(JSON.stringify({ function: 'newUser', "parameter": peer.id, id: window.userID }))
+            } else {
+                meetingSocket.onopen = e => meetingSocket.send(JSON.stringify({ function: 'newUser', "parameter": peer.id, id: window.userID }))
+            }
+            
+        }
+    
+    
+        const newUser = e => {
+            call = peer.call(e.parameter, stream)
+            peers.push(call)
+            call.on('stream', remoteStream => {    
+                setVideoStream(localAudio, remoteStream)
+            })
+        }
+
+        
+        meetingSocket.onmessage = e => {
+            const data = JSON.parse(e.data)
+            
+            if (data.function === "newUser" && data.parameter != peer.id) {
+                newUser(data)
+            }
+            
+            if (data.visitors) {
+                document.getElementById('counter').textContent = data.visitors;
+            }
+                
+
+        }
+    
+        peer.on('call', call => {
+            peers.push(call)
+            call.answer(stream)
+            call.on('stream', remoteStream => {
+                setVideoStream(localAudio, remoteStream)
+            })
+        })
+    
+        function makeid(length) {
+            var result = '';
+            var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            var charactersLength = characters.length;
+            for (var i = 0; i < length; i++) {
+                result += characters.charAt(Math.floor(Math.random() *
+                    charactersLength));
+            }
+            return result;
+        }
+    
+        var startMeetBtn = document.getElementById('join-stream');
+        startMeetBtn.addEventListener('click',(e)=>{
+            meetingSocket.send(JSON.stringify({
+                action: 'increase'
+            }))
+            startMeeting();
+            startMeetBtn.remove()
+        })
+        </script>
+    {% endif %}
+
+
+    <script>
+        var ExitBtn = document.getElementById('exit');
+
+        ExitBtn.addEventListener('click', ()=>{
+            if("{{c_user}}"){
+                meetingSocket.send(JSON.stringify({
+                    action:"close"
+                }))
+            }
+            window.location.href = '/';
+        })
+    </script>
 
 
 </body>
